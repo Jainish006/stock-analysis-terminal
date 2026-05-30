@@ -38,8 +38,8 @@ sector_dict = {
     "Auto": [
         "MARUTI.NS",
         "M&M.NS",
-        "TMPV.NS",        # Tata Motors Passenger Vehicles (Cars & EVs)
-        "TMCV.NS",        # Tata Motors Limited (Commercial Vehicles)
+        # "TMPV.NS",        # Tata Motors Passenger Vehicles (Cars & EVs)
+        # "TMCV.NS",        # Tata Motors Limited (Commercial Vehicles)
         "BAJAJ-AUTO.NS",
         "EICHERMOT.NS",
         "^NSEI"
