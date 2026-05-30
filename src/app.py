@@ -681,7 +681,7 @@ elif current_page == "⚠️ Entry Risk (with Risk/Reward prediction)":
     border: 3px solid {risk_color}; text-align:center; margin-bottom:20px;">
         <p style="color:gray; margin:0; font-size:16px;">Entry Risk Score</p>
         <p style="color:{risk_color}; margin:0; font-size:72px; font-weight:bold;">{buy_risk['score']}/100</p>
-        <p style="color:{risk_color}; margin:0; font-size:24px;">{buy_risk['label']} Risk</p>
+        <p style="color:{risk_color}; margin:0; font-size:24px;">{buy_risk['label']}</p>
     </div>
     """, unsafe_allow_html=True)
 
