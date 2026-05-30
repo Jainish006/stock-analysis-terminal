@@ -669,7 +669,7 @@ elif current_page == "⚠️ Entry Risk (with Risk/Reward prediction)":
     risk_reward = get_risk_reward(buy_risk['score'], consensus)
 
     # ── Entry Risk Score ──────────────────────────────────────────────────────
-    if buy_risk['label'] == "Strong Risk":
+    if buy_risk['label'] == "High Risk":
         risk_color = "#F44336"
     elif buy_risk['label'] == "Moderate Risk":
         risk_color = "#FF9800"
