@@ -7,7 +7,8 @@ from main import *
 import streamlit as st
 import pandas as pd
 from config import sector_dict, horizon
-
+import plotly.express as px
+import plotly.graph_objects as go
 st.set_page_config(page_title="Stock Analysis Terminal", layout='wide', page_icon="📈")
 
 # ── SESSION STATE ─────────────────────────────────────────────────────────────
@@ -185,8 +186,13 @@ elif current_page == "🏠 Home":
         x = raw_data[f'{ticker}_Close'].copy()
         x.index = pd.to_datetime(x.index).tz_localize(None)
 
-        st.subheader(f'{ticker} — Price History')
-        st.line_chart(pd.DataFrame({'Price (₹)': x}))
+        price_df = pd.DataFrame({
+            'Date': x.index,
+            'Price': x.values
+        })
+        fig = px.line(price_df, x='Date', y='Price', title=f'{ticker} — Price History')
+        st.plotly_chart(fig,use_container_width=True)
+        
 
 
 # ── PREDICTION ────────────────────────────────────────────────────────────────
@@ -384,44 +390,6 @@ elif current_page == "🌐 Market Context":
         st.markdown(kpi_box_float("Sector Momentum Value", sector_strength['value']), unsafe_allow_html=True)
 
     st.markdown("---")
-
-    # NIFTY Context
-    # st.subheader("📊 NIFTY Context")
-
-    # momentum_keys  = {k: v for k, v in nifty_context.items() if '_mom_'      in k}
-    # volatility_keys = {k: v for k, v in nifty_context.items() if '_vol_'     in k}
-    # ma_keys        = {k: v for k, v in nifty_context.items() if '_ma_dist_'  in k}
-    # mean_ret_keys  = {k: v for k, v in nifty_context.items() if '_mean_ret_' in k}
-
-    # st.caption("Momentum")
-    # cols = st.columns(len(momentum_keys))
-    # for i, (key, value) in enumerate(momentum_keys.items()):
-    #     label = label_map.get(key.replace("^NSEI_", ""), key)
-    #     with cols[i]:
-    #         st.markdown(kpi_box_float(label, value), unsafe_allow_html=True)
-
-    # st.caption("Volatility")
-    # cols = st.columns(max(len(volatility_keys), 1))
-    # for i, (key, value) in enumerate(volatility_keys.items()):
-    #     label = label_map.get(key.replace("^NSEI_", ""), key)
-    #     with cols[i]:
-    #         st.markdown(kpi_box_float(label, value, is_volatility=True), unsafe_allow_html=True)
-
-    # st.caption("MA Distance")
-    # cols = st.columns(len(ma_keys))
-    # for i, (key, value) in enumerate(ma_keys.items()):
-    #     label = label_map.get(key.replace("^NSEI_", ""), key)
-    #     with cols[i]:
-    #         st.markdown(kpi_box_float(label, value), unsafe_allow_html=True)
-
-    # st.caption("Mean Return")
-    # cols = st.columns(max(len(mean_ret_keys), 1))
-    # for i, (key, value) in enumerate(mean_ret_keys.items()):
-    #     label = label_map.get(key.replace("^NSEI_", ""), key)
-    #     with cols[i]:
-    #         st.markdown(kpi_box_float(label, value), unsafe_allow_html=True)
-
-    # st.markdown("---")
 
 
     # ── NIFTY CONTEXT ─────────────────────────────────────────────
@@ -644,7 +612,8 @@ elif current_page == "🌐 Market Context":
         relative_performance.style.format({"20D Momentum": "{:.2f}%"}),
         use_container_width=True
     )
-
+    fig = px.bar(relative_performance, x='Stocks', y='20D Momentum', title='Sector Relative Performance')
+    st.plotly_chart(fig,use_container_width=True)
 
 # ── ENTRY RISK + RISK/REWARD ──────────────────────────────────────────────────
 elif current_page == "⚠️ Entry Risk (with Risk/Reward prediction)":
@@ -814,7 +783,8 @@ elif current_page == "📉 Charts":
         norm_df = pd.DataFrame(norm_dict)
         # Put target ticker first so it renders with a distinct colour
         cols_order = [ticker] + [c for c in norm_df.columns if c != ticker]
-        st.line_chart(norm_df[cols_order], height=400)
+        fig = px.line(norm_df[cols_order], x=norm_df.index, y=cols_order, title=f'Sector Price Comparison (Normalised)')
+        st.plotly_chart(fig,use_container_width=True)
     else:
         st.info("No price data found for sector peers.")
 
@@ -829,7 +799,8 @@ elif current_page == "📉 Charts":
         mom_df = feature_matrix[mom_cols].copy()
         mom_df.index = pd.to_datetime(mom_df.index).tz_localize(None)
         mom_df.columns = [c.replace(f'{ticker}_mom_', '') + 'D Mom' for c in mom_cols]
-        st.line_chart(mom_df, height=350)
+        fig = px.line(mom_df, x=mom_df.index, y=mom_df.columns, title=f'Momentum Trend')
+        st.plotly_chart(fig,use_container_width=True)
     else:
         st.info("Momentum columns not found in feature matrix.")
 
@@ -844,7 +815,8 @@ elif current_page == "📉 Charts":
         vol_df = feature_matrix[vol_cols].copy()
         vol_df.index = pd.to_datetime(vol_df.index).tz_localize(None)
         vol_df.columns = [c.replace(f'{ticker}_vol_', '') + 'D Vol' for c in vol_cols]
-        st.area_chart(vol_df, height=350)
+        fig = px.area(vol_df, x=vol_df.index, y=vol_df.columns, title=f'Volatility Trend')
+        st.plotly_chart(fig,use_container_width=True)
     else:
         st.info("Volatility columns not found in feature matrix.")
 
@@ -859,10 +831,10 @@ elif current_page == "📉 Charts":
         price = raw_data[close_col].dropna().copy()
         price.index = pd.to_datetime(price.index).tz_localize(None)
         drawdown_series = (price - price.cummax()) / price.cummax()
-        st.area_chart(
-            pd.DataFrame({'Drawdown': drawdown_series}),
-            height=350
-        )
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=drawdown_series.index, y=drawdown_series.values, mode='lines', name='Drawdown'))
+        fig.update_layout(title=f'Drawdown from Peak', xaxis_title='Date', yaxis_title='Drawdown')
+        st.plotly_chart(fig,use_container_width=True)
     else:
         st.info(f"Price data for {ticker} not found.")
 
