@@ -9,7 +9,7 @@ import pandas as pd
 from config import sector_dict, horizon
 import plotly.express as px
 import plotly.graph_objects as go
-st.set_page_config(page_title="Stock Analysis Terminal", layout='wide', page_icon="📈")
+st.set_page_config(page_title="AlphaPulse - ML-Powered Stock Intelligence Platform", layout='wide', page_icon="📈")
 
 # ── SESSION STATE ─────────────────────────────────────────────────────────────
 if 'result' not in st.session_state:
@@ -157,12 +157,17 @@ if current_page == "📖 Page Guide":
 
 # ── HOME ──────────────────────────────────────────────────────────────────────
 elif current_page == "🏠 Home":
-    st.title('Stock Analysis Terminal')
-    st.markdown(
-        'An ML-powered stock analysis terminal for NSE equities. '
-        'Enter a stock ticker and sector to get model predictions, '
-        'technical health, risk analysis, and sector context.'
-    )
+    st.title("📈 AlphaPulse")
+
+    st.markdown("""
+    AlphaPulse is an ML-powered stock intelligence platform
+for NSE equities. It combines ensemble machine learning
+models, technical feature analysis, sector benchmarking,
+market regime detection, and risk/reward assessment to
+support data-driven investment decisions.
+    """)
+
+    st.markdown("---")
 
     col1, col2 = st.columns(2)
     with col1:
