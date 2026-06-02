@@ -157,7 +157,7 @@ if current_page == "📖 Page Guide":
 
 # ── HOME ──────────────────────────────────────────────────────────────────────
 elif current_page == "🏠 Home":
-    st.title("📈 AlphaPulse")
+    st.title("📈 AlphaPulse - ML-Powered Stock Intelligence Platform")
 
     st.markdown("""
     AlphaPulse is an ML-powered stock intelligence platform
