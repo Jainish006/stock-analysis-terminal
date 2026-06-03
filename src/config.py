@@ -1,5 +1,7 @@
+from datetime import date, timedelta
+
 START_DATE = "2012-01-01"
-END_DATE = "2025-01-01"
+END_DATE = (date.today() - timedelta(days=1)).isoformat()
 
 sector_dict = {
     "Banking_Financials": [
