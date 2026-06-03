@@ -781,6 +781,8 @@ elif current_page == "📉 Charts":
         if col_name not in raw_data.columns:
             continue
         series = raw_data[col_name].dropna().copy()
+        if len(series) == 0:
+            continue
         series.index = pd.to_datetime(series.index).tz_localize(None)
         norm_dict[t] = (series / series.iloc[0]) * 100
 
