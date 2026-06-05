@@ -2,8 +2,8 @@ from workflow import run_training_pipeline
 from config import sector_dict
 import pandas as pd
 
-def initialize_model(target_ticker,sector_name):
-    return run_training_pipeline(target_ticker,sector_name,sector_dict,save_models=False)
+def initialize_model(target_ticker,sector_name,horizon_val=5):
+    return run_training_pipeline(target_ticker,sector_name,sector_dict,horizon_val,save_models=False)
 
 
 def get_latest_features(feature_matrix):

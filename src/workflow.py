@@ -6,14 +6,19 @@ from train import *
 from sklearn.metrics import f1_score
 
 
-def create_splits(X, y):
+def create_splits(X, y, horizon):
+    split_idx = int(len(X) * 0.8)
 
-    x_train, x_test, y_train, y_test = train_test_split(X,y,test_size=0.2,shuffle=False)
+    x_train = X.iloc[:split_idx]
+    y_train = y.iloc[:split_idx]
+    
+
+    x_test = X.iloc[split_idx + horizon:]
+    y_test = y.iloc[split_idx + horizon:]
 
     return (
-        x_train,x_test,y_train,y_test
+        x_train, x_test, y_train, y_test
     )
-
 
 def train_lr_workflow(x_train,y_train,x_test,y_test):
 
@@ -41,30 +46,29 @@ def train_xgb_workflow(x_train,y_train,x_test,y_test):
     return xgb_model
 
 
-def run_training_pipeline(target_ticker,sector_name,sector_dict,save_models=True):
+def run_training_pipeline(target_ticker, sector_name, sector_dict, horizon_val=5, save_models=True):
 
     tickers = prepare_ticker_universe(target_ticker, sector_name, sector_dict)
     raw_data = download_data(tickers)
 
-    data = prepare_dataset(target_ticker,sector_name,sector_dict)
+    data = prepare_dataset(target_ticker, sector_name, sector_dict, horizons=horizon_val)
 
-    X , y = data.drop(columns=['Target']),data['Target']
+    X , y = data.drop(columns=['Target']), data['Target']
 
-    (x_train,x_test,y_train,y_test) = create_splits(X, y)
+ 
+    (x_train, x_test, y_train, y_test) = create_splits(X, y, horizon=horizon_val)
 
     print("Logistic Regression Results")
-
-    lr_model = train_lr_workflow(x_train,y_train,x_test,y_test)
+    lr_model = train_lr_workflow(x_train, y_train, x_test, y_test)
 
     print("\nXGBoost Results")
+    xgb_model = train_xgb_workflow(x_train, y_train, x_test, y_test)
+    
+    f1_score_lr = f1_score(y_test, lr_model.predict(x_test))
+    f1_score_xgb = f1_score(y_test, xgb_model.predict(x_test))
 
-    xgb_model = train_xgb_workflow(x_train,y_train,x_test,y_test)
-    f1_score_lr = f1_score(y_test,lr_model.predict(x_test))
-    f1_score_xgb = f1_score(y_test,xgb_model.predict(x_test))
-
-
-    lr_weight = f1_score_lr/(f1_score_lr+f1_score_xgb)
-    xgb_weight = f1_score_xgb/(f1_score_lr+f1_score_xgb)
+    lr_weight = f1_score_lr / (f1_score_lr + f1_score_xgb)
+    xgb_weight = f1_score_xgb / (f1_score_lr + f1_score_xgb)
 
     if save_models:
         save_model(lr_model, "logistic_regression.pkl")
@@ -72,9 +76,9 @@ def run_training_pipeline(target_ticker,sector_name,sector_dict,save_models=True
         print("\nModels saved.")
 
     return {
-        'raw_data':raw_data,
-        'lr_weight':lr_weight,
-        'xgb_weight':xgb_weight,
+        'raw_data': raw_data,
+        'lr_weight': lr_weight,
+        'xgb_weight': xgb_weight,
         "main_feature_matrix": X,
         "lr_model": lr_model,
         "xgb_model": xgb_model,
@@ -82,4 +86,4 @@ def run_training_pipeline(target_ticker,sector_name,sector_dict,save_models=True
         "x_test": x_test,
         "y_train": y_train,
         "y_test": y_test
-        }
+    }

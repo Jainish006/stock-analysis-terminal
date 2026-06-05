@@ -6,7 +6,7 @@ from main import get_latest_features
 from main import *
 import streamlit as st
 import pandas as pd
-from config import sector_dict, horizon
+from config import sector_dict
 import plotly.express as px
 import plotly.graph_objects as go
 st.set_page_config(page_title="AlphaPulse - ML-Powered Stock Intelligence Platform", layout='wide', page_icon="📈")
@@ -18,6 +18,8 @@ if 'ticker' not in st.session_state:
     st.session_state['ticker'] = None
 if 'sector' not in st.session_state:
     st.session_state['sector'] = None
+if 'horizon' not in st.session_state:
+    st.session_state['horizon'] = 5
 
 # ── SIDEBAR ───────────────────────────────────────────────────────────────────
 pages = [
@@ -100,7 +102,7 @@ if current_page == "📖 Page Guide":
             "icon": "📈",
             "title": "Prediction",
             "nav": "📈 Prediction",
-            "what": f"Shows the ML model output — Logistic Regression and XGBoost probabilities of the stock being bullish over the next {horizon} days, combined into a consensus score.",
+            "what": f"Shows the ML model output — Logistic Regression and XGBoost probabilities of the stock being bullish over the next {st.session_state['horizon']} days, combined into a consensus score.",
             "when": "Use this when you want a direct buy/sell/hold signal backed by the model.",
             "shows": ["LR Probability", "XGB Probability", "Consensus Probability", "Model Agreement", "Final Signal (Strong Buy → Strong Sell)"],
         },
@@ -169,21 +171,24 @@ support data-driven investment decisions.
 
     st.markdown("---")
 
-    col1, col2 = st.columns(2)
+    col1, col2,col3 = st.columns(3)
     with col1:
         target_ticker = st.text_input('Enter NSE stock ticker', placeholder='e.g. HDFCBANK.NS')
     with col2:
         sector_name = st.selectbox('Select the sector of the stock', list(sector_dict.keys()))
+    with col3:
+        horizon_input = st.number_input('Enter Prediction Horizon (Days)', min_value=1, max_value=30, value=5, step=1)
 
     if st.button('Run Analysis'):
         if not target_ticker or not sector_name:
             st.error("Please enter both a ticker and select a sector")
         else:
             with st.spinner('Training models… This may take a minute'):
-                result = initialize_model(target_ticker, sector_name)
+                result = initialize_model(target_ticker, sector_name,horizon_input)
                 st.session_state['result'] = result
                 st.session_state['ticker'] = target_ticker
                 st.session_state['sector'] = sector_name
+                st.session_state['horizon'] = horizon_input
 
     if st.session_state['result'] is not None:
         raw_data = st.session_state['result']['raw_data']
@@ -214,7 +219,7 @@ elif current_page == "📈 Prediction":
     st.markdown(f"**{ticker}** | {sector} Sector")
     st.info(
         f"ℹ️ All probabilities and signals on this page reflect the likelihood of the stock being "
-        f"Bullish over the next **{horizon} days**. A higher probability means the model sees "
+        f"Bullish over the next **{st.session_state['horizon']} days**. A higher probability means the model sees "
         f"stronger buying conditions ahead."
     )
     st.markdown("---")
@@ -254,7 +259,7 @@ elif current_page == "📈 Prediction":
         <div style="background-color:#1e1e2e; padding:20px; border-radius:10px;
         border-left:4px solid #4CAF50;">
             <p style="color:gray; margin:0; font-size:13px;">Prediction Horizon</p>
-            <p style="color:white; margin:0; font-size:28px; font-weight:bold;">{horizon} Days</p>
+            <p style="color:white; margin:0; font-size:28px; font-weight:bold;">{st.session_state['horizon']} Days</p>
         </div>
         """, unsafe_allow_html=True)
         st.caption("The number of days ahead the model is predicting for")
